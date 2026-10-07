@@ -2,7 +2,7 @@
 
 Usage:
     uv run python -m app.workers.main            # run the scheduler (blocks)
-    uv run python -m app.workers.main --once rss # run one job now and exit
+    uv run python -m app.workers.main --once rss # run one job now and exit (rss | kap)
 """
 
 import argparse
@@ -23,21 +23,25 @@ TIMEZONE = ZoneInfo("Europe/Istanbul")
 
 JOBS: dict[str, Callable[[], Any]] = {
     "rss": jobs.collect_rss,
+    "kap": jobs.collect_kap,
 }
 
 
 def build_scheduler() -> BlockingScheduler:
     settings = get_settings()
     scheduler = BlockingScheduler(timezone=TIMEZONE)
-    scheduler.add_job(
-        jobs.collect_rss,
-        "interval",
-        minutes=settings.rss_interval_minutes,
-        id="rss",
-        next_run_time=datetime.now(TIMEZONE),  # also run once at startup
-        max_instances=1,
-        coalesce=True,
-    )
+    now = datetime.now(TIMEZONE)
+    intervals = {"rss": settings.rss_interval_minutes, "kap": settings.kap_interval_minutes}
+    for job_id, minutes in intervals.items():
+        scheduler.add_job(
+            JOBS[job_id],
+            "interval",
+            minutes=minutes,
+            id=job_id,
+            next_run_time=now,  # also run once at startup
+            max_instances=1,
+            coalesce=True,
+        )
     return scheduler
 
 

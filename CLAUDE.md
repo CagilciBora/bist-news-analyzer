@@ -175,9 +175,20 @@ Genel plan onaylandı (2026-10-07).
 
 - [x] Faz 0 — Kurulum (2026-10-07)
 - [x] Faz 1 — Hisse tablosu (2026-10-07). Liste `backend/config/stocks.yaml`; `scripts/seed_stocks.py` ticker'a göre upsert yapar, listeden çıkarılan hisseyi silmez (`is_active: false` ile kapatılır). Alias'lara ASCII varyantlar (Tupras, Sisecam) eklenmedi: Faz 2'de eşleştirme casefold + diakritik normalizasyonu ile yapılacak.
-- [ ] Faz 2 — Haber toplayıcı
-  - [x] 2a RSS (2026-10-07). Tek gerçek çalıştırmada 10 hisse için 686 kayıt geldi, 528 haber saklandı, kopya yok.
-  - [ ] 2b KAP
+- [x] Faz 2 — Haber toplayıcı (2026-10-07)
+  - [x] 2a RSS. Tek gerçek çalıştırmada 10 hisse için 686 kayıt geldi, 528 haber saklandı, kopya yok.
+  - [x] 2b KAP. 5 günlük geriye dönük doldurmada 1.282 bildirimden 19'u bizim hisselerimize aitti, kopya yok.
+
+**Sonraki oturum: Faz 3 (analiz katmanı).** Aşağıdaki Faz 2a/2b notlarını oku.
+
+### Faz 2b kararları ve gözlemleri
+
+- **Uç nokta:** KAP'ın "Bildirim Sorgu" sayfasının kullandığı `POST /tr/api/disclosure/members/byCriteria`. Gövde `{fromDate, toDate, mkkMemberOidList: [], subjectList: []}`, `Referer: /tr/bildirim-sorgu` ile gönderilir. Tüm piyasayı döndürür (~300 bildirim/gün, en fazla 2000). Filtre bizim tarafta `stockCodes` ile yapılır. `mkkMemberOidList` filtresi şirketin kendi bildirimlerini güvenilir döndürmedi, kullanılmıyor.
+- **Sıklık:** Çalıştırma başına tek istek (dün..bugün), 60 dk'da bir.
+- **Erişim:** `robots.txt` KAP WAF'ı tarafından HTTP 666 ile engelleniyor; sayfa ve API kendi User-Agent'ımızla çalışıyor.
+- **Eşleştirme:** Yayınlayan şirketin kodu (`stockCodes`) skor 1.0. `relatedStocks` sadece ≤3 kod içeriyorsa skor 0.7 (ör. Borsa İstanbul'un "Devre Kesici" bildirimi). MKK'nın 150 hisselik toplu duyuruları atlanır.
+- **Saklanan:** başlık = `"{subject}: {summary}"`, `kap_disclosure_type` = subject, link = `/tr/Bildirim/{disclosureIndex}`. Kopya anahtarı bildirim numarası (KAP başlıkları şirketler arasında aynı olabiliyor).
+- **Faz 3 için not:** KAP başlıkları çoğu zaman bilgi taşımıyor ("Yeni İş İlişkisi: Sözleşme İmzalanması"). Analiz sırasında bildirim gövdesi `GET /tr/api/notification/attachment-detail/{disclosureIndex}` ile geçici olarak çekilip LLM'e verilebilir; **saklanmaz** (kural 2.4). Bu da düşük frekanslı ve cache'li yapılmalı.
 
 ### Faz 2a kararları ve gözlemleri
 

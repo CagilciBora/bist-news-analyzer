@@ -42,9 +42,10 @@ class NewsItem(Base):
     title: Mapped[str] = mapped_column(Text)
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    # Hash of the normalized title + publish date; collapses the same story syndicated by many sites.
+    # RSS: normalized title + publish day (collapses the same story syndicated by many sites).
+    # KAP: disclosure number (KAP titles are generic and repeat across companies).
     content_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    kap_disclosure_type: Mapped[str | None] = mapped_column(String(100))
+    kap_disclosure_type: Mapped[str | None] = mapped_column(String(200))
 
     stock_links: Mapped[list["NewsStockLink"]] = relationship(
         back_populates="news", cascade="all, delete-orphan", passive_deletes=True

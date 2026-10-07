@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     http_cache_dir: Path = REPO_ROOT / "backend" / ".cache" / "http"
     rss_interval_minutes: int = 120
     rss_lookback_days: int = 7
+    kap_interval_minutes: int = 60
+    kap_lookback_days: int = 1  # query yesterday..today; one request per run
 
     log_level: str = "INFO"
 

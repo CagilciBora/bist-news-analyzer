@@ -30,8 +30,9 @@ uv run python scripts/ollama_smoke_test.py [--model gemma4:e4b-it-q4_K_M]
 Run the collectors:
 
 ```bash
-uv run python -m app.workers.main --once rss   # one RSS collection run, then exit
-uv run python -m app.workers.main              # scheduler (RSS every 120 min)
+uv run python -m app.workers.main --once rss   # one Google News RSS run, then exit
+uv run python -m app.workers.main --once kap   # one KAP disclosure run (single request), then exit
+uv run python -m app.workers.main              # scheduler: RSS every 120 min, KAP every 60 min
 ```
 
 Tests that call a real Ollama server are marked `ollama` and skipped by default (`uv run pytest -m ollama` to run them).
