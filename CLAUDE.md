@@ -175,7 +175,19 @@ Genel plan onaylandı (2026-10-07).
 
 - [x] Faz 0 — Kurulum (2026-10-07)
 - [x] Faz 1 — Hisse tablosu (2026-10-07). Liste `backend/config/stocks.yaml`; `scripts/seed_stocks.py` ticker'a göre upsert yapar, listeden çıkarılan hisseyi silmez (`is_active: false` ile kapatılır). Alias'lara ASCII varyantlar (Tupras, Sisecam) eklenmedi: Faz 2'de eşleştirme casefold + diakritik normalizasyonu ile yapılacak.
-- [ ] Faz 2 — Haber toplayıcı (2a RSS, 2b KAP)
+- [ ] Faz 2 — Haber toplayıcı
+  - [x] 2a RSS (2026-10-07). Tek gerçek çalıştırmada 10 hisse için 686 kayıt geldi, 528 haber saklandı, kopya yok.
+  - [ ] 2b KAP
+
+### Faz 2a kararları ve gözlemleri
+
+- **Sorgu:** Hisse başına tek Google News sorgusu (`"TICKER" OR "alias" ... when:7d`). İstekler arası en az 3 sn, 30 dk disk cache (`backend/.cache/http`), worker 120 dk'da bir çalışır.
+- **Eşleştirme sadece başlık üzerinden** (gövde saklanmıyor). Başlık sonundaki `" - Kaynak"` eşleştirmeden önce silinir. Ticker orijinal metinde büyük harfle aranır. Kısaltma alias'lar (THY, BİM) büyük harfle ya da baş harfi büyük ("Bim'de") yazımla eşleşir. Diğer alias'lar harf ve büyük-küçük harf farkı gözetmeden aranır. Hiçbir hisseyle eşleşmeyen başlık saklanmaz. Bir başlık birden fazla hisseye bağlanabilir.
+- **Kopya tespiti:** `url` unique ve `content_hash` unique. Hash, normalize edilmiş başlık + UTC yayın günü üzerinden hesaplanır; aynı gün aynı başlığı yayınlayan sitelerden sadece ilk gelen saklanır.
+- **Faz 3 için notlar:**
+  - Doğru eşleşip finansal değeri düşük haberler çok (BİM aktüel katalog, Akbank Caz Festivali, THY voleybol). Ayrıca soyadı kaynaklı yanlış pozitifler var ("Dr. ... Erdemir"). `relevance` bunları ayırmalı; LLM'e gitmeden önce ucuz bir kural ön filtresi düşünülebilir.
+  - Bazı kaynak başlıkları "hedef fiyat", "Al tavsiyesi" içeriyor. Yasaklı ifade filtresi **bizim ürettiğimiz** metne uygulanır; kaynak başlığı değiştirilmez.
+- Alias listesi değişince eski haberler yeniden eşleştirilmez (gerekirse ileride bir re-link komutu yazılır).
 - [ ] Faz 3 — Analiz katmanı
 - [ ] Faz 4 — REST API
 - [ ] Faz 5 — Mobil uygulama

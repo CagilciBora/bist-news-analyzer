@@ -55,3 +55,8 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 exclude = ["alembic/"]
+
+[[tool.mypy.overrides]]
+# These libraries ship no type information.
+module = ["feedparser", "apscheduler.*"]
+ignore_missing_imports = true

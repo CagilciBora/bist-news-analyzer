@@ -31,8 +31,13 @@ class Settings(BaseSettings):
     ollama_num_ctx: int = 4096
     ollama_timeout_seconds: float = 120.0
 
-    # Collectors
+    # Collectors (kept deliberately slow: CLAUDE.md §2.4)
     http_user_agent: str = "bist-news-personal/0.1"
+    http_min_interval_seconds: float = 3.0
+    http_cache_ttl_seconds: float = 1800.0
+    http_cache_dir: Path = REPO_ROOT / "backend" / ".cache" / "http"
+    rss_interval_minutes: int = 120
+    rss_lookback_days: int = 7
 
     log_level: str = "INFO"
 
