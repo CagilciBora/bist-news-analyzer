@@ -87,6 +87,19 @@ def test_expired_cache_refetches(tmp_path: Path) -> None:
 
 
 @respx.mock
+def test_post_json_is_cached_per_body(tmp_path: Path) -> None:
+    route = respx.post(URL_A).respond(text="[]")
+
+    with _client(FakeClock(), cache_dir=tmp_path) as http:
+        http.post_json(URL_A, {"day": 1})
+        http.post_json(URL_A, {"day": 1})
+        http.post_json(URL_A, {"day": 2})
+
+    assert route.call_count == 2
+    assert route.calls.last.request.content == b'{"day":2}'
+
+
+@respx.mock
 def test_http_errors_raise_and_are_not_cached(tmp_path: Path) -> None:
     respx.get(URL_A).respond(status_code=503)
 

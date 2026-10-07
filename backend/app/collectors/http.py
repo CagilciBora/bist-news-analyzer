@@ -7,12 +7,13 @@
 """
 
 import hashlib
+import json
 import logging
 import time
 from collections.abc import Callable
 from pathlib import Path
 from types import TracebackType
-from typing import Self
+from typing import Any, Self
 
 import httpx
 
@@ -46,20 +47,39 @@ class PoliteHttpClient:
         self._last_request_at: float | None = None
         self.network_requests = 0
 
-    def get_text(self, url: str) -> str:
-        cached = self._read_cache(url)
+    def get_text(self, url: str, *, headers: dict[str, str] | None = None) -> str:
+        return self._request("GET", url, cache_key=url, headers=headers)
+
+    def post_json(self, url: str, payload: Any, *, headers: dict[str, str] | None = None) -> str:
+        """POST a JSON body and return the response text (cached per URL + body)."""
+        body = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+        return self._request("POST", url, cache_key=f"POST {url} {body}", json_body=payload, headers=headers)
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        *,
+        cache_key: str,
+        json_body: Any = None,
+        headers: dict[str, str] | None = None,
+    ) -> str:
+        cached = self._read_cache(cache_key)
         if cached is not None:
-            logger.debug("cache hit: %s", url)
+            logger.debug("cache hit: %s %s", method, url)
             return cached
 
         self._wait_for_slot()
-        logger.info("GET %s", url)
-        response = self._client.get(url)
-        self._last_request_at = self._clock()
-        self.network_requests += 1
+        logger.info("%s %s", method, url)
+        try:
+            response = self._client.request(method, url, json=json_body, headers=headers)
+        finally:
+            # Count failed attempts too, so errors cannot turn into a fast retry loop.
+            self._last_request_at = self._clock()
+            self.network_requests += 1
         response.raise_for_status()
 
-        self._write_cache(url, response.text)
+        self._write_cache(cache_key, response.text)
         return response.text
 
     def _wait_for_slot(self) -> None:
@@ -69,21 +89,21 @@ class PoliteHttpClient:
         if remaining > 0:
             self._sleep(remaining)
 
-    def _cache_path(self, url: str) -> Path | None:
+    def _cache_path(self, key: str) -> Path | None:
         if self._cache_dir is None:
             return None
-        return self._cache_dir / f"{hashlib.sha256(url.encode()).hexdigest()}.txt"
+        return self._cache_dir / f"{hashlib.sha256(key.encode()).hexdigest()}.txt"
 
-    def _read_cache(self, url: str) -> str | None:
-        path = self._cache_path(url)
+    def _read_cache(self, key: str) -> str | None:
+        path = self._cache_path(key)
         if path is None or not path.exists():
             return None
         if time.time() - path.stat().st_mtime > self._cache_ttl:
             return None
         return path.read_text(encoding="utf-8")
 
-    def _write_cache(self, url: str, body: str) -> None:
-        path = self._cache_path(url)
+    def _write_cache(self, key: str, body: str) -> None:
+        path = self._cache_path(key)
         if path is None:
             return
         path.parent.mkdir(parents=True, exist_ok=True)
