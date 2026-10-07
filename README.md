@@ -22,6 +22,7 @@ ollama pull gemma4:e4b-it-q4_K_M  # secondary candidate
 cd backend
 uv sync
 uv run alembic upgrade head
+uv run python scripts/seed_stocks.py   # tracked stocks from config/stocks.yaml (idempotent)
 uv run pytest
 uv run python scripts/ollama_smoke_test.py [--model gemma4:e4b-it-q4_K_M]
 ```

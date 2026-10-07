@@ -174,7 +174,7 @@ Model karşılaştırma değerlendirme seti, README (mimari diyagram, kurulum, e
 Genel plan onaylandı (2026-10-07).
 
 - [x] Faz 0 — Kurulum (2026-10-07)
-- [ ] Faz 1 — Hisse tablosu
+- [x] Faz 1 — Hisse tablosu (2026-10-07). Liste `backend/config/stocks.yaml`; `scripts/seed_stocks.py` ticker'a göre upsert yapar, listeden çıkarılan hisseyi silmez (`is_active: false` ile kapatılır). Alias'lara ASCII varyantlar (Tupras, Sisecam) eklenmedi: Faz 2'de eşleştirme casefold + diakritik normalizasyonu ile yapılacak.
 - [ ] Faz 2 — Haber toplayıcı (2a RSS, 2b KAP)
 - [ ] Faz 3 — Analiz katmanı
 - [ ] Faz 4 — REST API

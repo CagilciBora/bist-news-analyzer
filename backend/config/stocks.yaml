@@ -1,0 +1,56 @@
+# Tracked BIST stocks. Edit and re-run `uv run python scripts/seed_stocks.py`.
+# Seeding is an upsert keyed by ticker: existing rows are updated, new ones inserted.
+#
+# aliases: names that appear in news headlines. Avoid generic words that would
+# cause false matches (e.g. "Garanti" alone, "Koç" alone).
+
+stocks:
+  - ticker: THYAO
+    name: Türk Hava Yolları A.O.
+    sector: Ulaştırma
+    aliases: [Türk Hava Yolları, THY, Turkish Airlines]
+
+  - ticker: ASELS
+    name: ASELSAN Elektronik Sanayi ve Ticaret A.Ş.
+    sector: Savunma
+    aliases: [ASELSAN]
+
+  - ticker: GARAN
+    name: Türkiye Garanti Bankası A.Ş.
+    sector: Bankacılık
+    aliases: [Garanti BBVA, Garanti Bankası]
+
+  - ticker: AKBNK
+    name: Akbank T.A.Ş.
+    sector: Bankacılık
+    aliases: [Akbank]
+
+  - ticker: BIMAS
+    name: BİM Birleşik Mağazalar A.Ş.
+    sector: Perakende
+    aliases: [BİM, Birleşik Mağazalar]
+
+  - ticker: EREGL
+    name: Ereğli Demir ve Çelik Fabrikaları T.A.Ş.
+    sector: Demir-Çelik
+    aliases: [Erdemir, Ereğli Demir Çelik]
+
+  - ticker: KCHOL
+    name: Koç Holding A.Ş.
+    sector: Holding
+    aliases: [Koç Holding]
+
+  - ticker: SISE
+    name: Türkiye Şişe ve Cam Fabrikaları A.Ş.
+    sector: Cam
+    aliases: [Şişecam]
+
+  - ticker: TUPRS
+    name: Türkiye Petrol Rafinerileri A.Ş.
+    sector: Enerji
+    aliases: [Tüpraş]
+
+  - ticker: FROTO
+    name: Ford Otomotiv Sanayi A.Ş.
+    sector: Otomotiv
+    aliases: [Ford Otosan]
